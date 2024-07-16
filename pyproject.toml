@@ -23,6 +23,6 @@ classifiers = [
 license = {text = "MIT License"}
 
 [project.urls]
-homepage = "https://github.com/wrrulos/ezjsonpy"
-documentation = "https://github.com/wrrulos/ezjsonpy"
-repository = "hhttps://github.com/wrrulos/ezjsonpy"
+homepage = "https://github.com/pedroagustinvega/ezjsonpy"
+documentation = "https://github.com/pedroagustinvega/ezjsonpy"
+repository = "https://github.com/pedroagustinvega/ezjsonpy"
