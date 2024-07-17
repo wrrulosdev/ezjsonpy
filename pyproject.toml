@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ezjsonpy"
 description = "Python library that allows you to easily load languages and settings ​​into your project using JSON files"
-version = "1.0.0"
+version = "1.0.1"
 readme = "README.md"
 requires-python = ">=3.6"
 keywords = ["language", "settings", "python", "json"]
