@@ -23,18 +23,14 @@ class ConfigLoader:
 
     def load_configuration(self, config_name: str, config_path: Union[str, os.PathLike]) -> None:
         """
-        Load a configuration from a JSON file
+        Load a configuration from a JSON file.
 
-        Args:
-            config_name (str): Configuration name
-            config_path (Union[str, os.PathLike]): Path to the configuration file
-
-        Raises:
-            ConfigurationAlreadyLoadedError: Configuration already loaded
-            ConfigurationFileNotFoundError: Configuration file not found
-            ValueError: Configuration file is not a valid JSON file
+        :param str config_name: Configuration name
+        :param Union[str, os.PathLike] config_path: Path to the configuration file
+        :raises ConfigurationAlreadyLoadedError: Configuration already loaded
+        :raises ConfigurationFileNotFoundError: Configuration file not found
+        :raises ValueError: Configuration file is not a valid JSON file
         """
-
         if config_name in self.configurations:
             raise ConfigurationAlreadyLoadedError(f'Configuration {config_name} already loaded')
 
@@ -50,18 +46,14 @@ class ConfigLoader:
 
     async def async_load_configuration(self, config_name: str, config_path: Union[str, os.PathLike]) -> None:
         """
-        Load a configuration from a JSON file asynchronously
+        Load a configuration from a JSON file asynchronously.
 
-        Args:
-            config_name (str): Configuration name
-            config_path (Union[str, os.PathLike]): Path to the configuration file
-
-        Raises:
-            ConfigurationAlreadyLoadedError: Configuration already loaded
-            ConfigurationFileNotFoundError: Configuration file not found
-            ValueError: Configuration file is not a valid JSON file
+        :param str config_name: Configuration name
+        :param Union[str, os.PathLike] config_path: Path to the configuration file
+        :raises ConfigurationAlreadyLoadedError: Configuration already loaded
+        :raises ConfigurationFileNotFoundError: Configuration file not found
+        :raises ValueError: Configuration file is not a valid JSON file
         """
-
         if config_name in self.configurations:
             raise ConfigurationAlreadyLoadedError(f'Configuration {config_name} already loaded')
 
@@ -82,10 +74,8 @@ class ConfigLoader:
         """
         Load multiple configurations from JSON files
 
-        Args:
-            configurations (List[Dict[str, Union[str, os.PathLike]]]): List of dictionaries with configuration names and paths
+        :param List[Dict[str, Union[str, os.PathLike]]] configurations: List of dictionaries with configuration names and paths
         """
-
         self._check_configuration_list(configurations=configurations)
 
         for configuration in configurations:
@@ -95,10 +85,8 @@ class ConfigLoader:
         """
         Load multiple configurations from JSON files asynchronously
 
-        Args: configurations (List[Dict[str, Union[str, os.PathLike]]]): List of dictionaries with configuration
-        names and paths
+        :param List[Dict[str, Union[str, os.PathLike]]] configurations: _description_
         """
-
         self._check_configuration_list(configurations=configurations)
 
         for configuration in configurations:
@@ -107,38 +95,27 @@ class ConfigLoader:
     def get_config(self, key: str, config_name: str) -> Union[str, int, float, bool, None, dict, list]:
         """
         Get a value from a configuration by key
-        The key can be a nested key separated by dots (example: 'key1.key2.key3')
 
-        Args:
-            key (str): Key to get the value from
-            config_name (str): Configuration name
-
-        Raises:
-            ConfigurationNotLoadedError: Configuration not loaded
-
-        Returns:
-            Union[str, int, float, bool, None, dict, list]: Value from the configuration
+        :param str key: Key to get the value from
+        :param str config_name: Configuration name
+        :raises ConfigurationNotLoadedError: Configuration not loaded
+        :return Union[str, int, float, bool, None, dict, list]: Value from the configuration
         """
-
         if config_name not in self.configurations:
             raise ConfigurationNotLoadedError(f'Configuration {config_name} not loaded')
 
-        keys = key.split('.')
+        keys: List[str] = key.split('.')
         return reduce(lambda d, k: d.get(k, key) if isinstance(d, dict) else key, keys, self.configurations[config_name])
 
     def set_config(self, key: str, value: Union[str, int, float, bool, None, dict, list], config_name: str) -> None:
         """
         Set a value in a configuration by key and save the changes to the configuration file
 
-        Args:
-            key (str): Key to set the value in
-            value (Union[str, int, float, bool, None, dict, list]): Value to set
-            config_name (str): Configuration name
-
-        Raises:
-            ConfigurationNotLoadedError: Configuration not loaded
+        :param str key: Key to set the value in
+        :param Union[str, int, float, bool, None, dict, list] value: Value to set
+        :param str config_name: Configuration name
+        :raises ConfigurationNotLoadedError: Configuration not loaded
         """
-
         if config_name not in self.configurations:
             raise ConfigurationNotLoadedError(f'Configuration {config_name} not loaded')
 
@@ -154,24 +131,43 @@ class ConfigLoader:
         with open(config_path, 'w', encoding='utf-8') as config_file:
             json.dump(self.configurations[config_name], config_file, indent=4)
 
+    def remove_config(self, key: str, config_name: str) -> None:
+        """
+        Remove a value from a configuration by key and save the changes to the configuration file
+
+        :param str key: Key to remove the value from
+        :param str config_name: Configuration name
+        :raises ConfigurationNotLoadedError: Configuration not loaded
+        """
+        if config_name not in self.configurations:
+            raise ConfigurationNotLoadedError(f'Configuration {config_name} not loaded')
+
+        key_parts: List[str] = key.split('.')
+        config_dict: dict = self.configurations[config_name]
+
+        for k in key_parts[:-1]:
+            config_dict: dict = config_dict.setdefault(k, {})
+
+        del config_dict[key_parts[-1]]
+        config_path: str = self.config_paths[config_name]
+
+        with open(config_path, 'w', encoding='utf-8') as config_file:
+            json.dump(self.configurations[config_name], config_file, indent=4)
+
     async def async_set_config(self, key: str, value: Union[str, int, float, bool, None, dict, list], config_name: str) -> None:
         """
         Set a value in a configuration by key and save the changes to the configuration file asynchronously
 
-        Args:
-            key (str): Key to set the value in
-            value (Union[str, int, float, bool, None, dict, list]): Value to set
-            config_name (str): Configuration name
-
-        Raises:
-            ConfigurationNotLoadedError: Configuration not loaded
+        :param str key: Key to set the value in
+        :param Union[str, int, float, bool, None, dict, list] value: Value to set
+        :param str config_name: Configuration name
+        :raises ConfigurationNotLoadedError: Configuration not loaded
         """
-
         if config_name not in self.configurations:
             raise ConfigurationNotLoadedError(f'Configuration {config_name} not loaded')
 
-        key_parts = key.split('.')
-        config_dict = self.configurations[config_name]
+        key_parts: List[str] = key.split('.')
+        config_dict: dict = self.configurations[config_name]
 
         for part in key_parts[:-1]:
             config_dict = config_dict.setdefault(part, {})
@@ -186,28 +182,19 @@ class ConfigLoader:
         """
         Get all loaded configurations
 
-        Returns:
-            Dict[str, dict]: Loaded configurations
+        :return Dict[str, dict]: Loaded configurations
         """
-
         return self.configurations
 
     def _check_configuration_list(self, configurations: List[Dict[str, Union[str, os.PathLike]]]) -> None:
         """
-        Check if a list of configurations is valid
+        Check if the configurations list is valid
 
-        Args:
-            configurations (List[Dict[str, Union[str, os.PathLike]]]): List of dictionaries with configuration names and paths
-
-        Raises:
-            ValueError: Configuration list is not valid
-            ValueError: Configuration entry is not valid
-            ValueError: Configuration dictionary is not valid
-            ValueError: "name" must be a string and "path" must be a string or os.PathLike
+        :param List[Dict[str, Union[str, os.PathLike]]] configurations: List of dictionaries with configuration names and paths
+        :raises ValueError: Invalid configurations list | Each configuration entry must be a dictionary | Each configuration dictionary must have "name" and "path" keys | "name" must be a string and "path" must be a string or os.PathLike
         """
-
         if not isinstance(configurations, list):
-            raise ValueError('configurations must be a list of dictionaries')
+            raise ValueError('Configurations must be a list of dictionaries')
 
         for configuration in configurations:
             if not isinstance(configuration, dict):
@@ -220,18 +207,16 @@ class ConfigLoader:
                 raise ValueError('"name" must be a string and "path" must be a string or os.PathLike')
 
 
-config_loader = ConfigLoader()
+config_loader: ConfigLoader = ConfigLoader()
 
 
 def load_configuration(config_name: str, config_path: Union[str, os.PathLike]) -> None:
     """
     Load a configuration from a JSON file
 
-    Args:
-        config_name (str): Configuration name
-        config_path (Union[str, os.PathLike]): Path to the configuration file
+    :param str config_name: Configuration name
+    :param Union[str, os.PathLike] config_path: Configuration path
     """
-
     config_loader.load_configuration(config_name, config_path)
 
 
@@ -239,10 +224,8 @@ def load_configurations(configurations: List[Dict[str, Union[str, os.PathLike]]]
     """
     Load multiple configurations from JSON files
 
-    Args:
-        configurations (List[Dict[str, Union[str, os.PathLike]]]): List of dictionaries with configuration names and paths
+    :param List[Dict[str, Union[str, os.PathLike]]] configurations: List of dictionaries with configuration names and paths
     """
-
     config_loader.load_configurations(configurations)
 
 
@@ -250,11 +233,9 @@ async def async_load_configuration(config_name: str, config_path: Union[str, os.
     """
     Load a configuration from a JSON file asynchronously
 
-    Args:
-        config_name (str): Configuration name
-        config_path (Union[str, os.PathLike]): Configuration path
+    :param str config_name: Configuration name
+    :param Union[str, os.PathLike] config_path: Configuration path
     """
-
     await config_loader.async_load_configuration(config_name, config_path)
 
 
@@ -262,10 +243,8 @@ async def async_load_configurations(configurations: List[Dict[str, Union[str, os
     """
     Load multiple configurations from JSON files asynchronously
 
-    Args:
-        configurations (List[Dict[str, Union[str, os.PathLike]]]): List of dictionaries with configuration names and paths
+    :param List[Dict[str, Union[str, os.PathLike]]] configurations: List of dictionaries with configuration names and paths
     """
-
     await config_loader.async_load_configurations(configurations)
 
 
@@ -273,16 +252,10 @@ def get_configuration(config_name: str) -> dict:
     """
     Get a loaded configuration
 
-    Args:
-        config_name (str): Configuration name
-
-    Raises:
-        ConfigurationNotLoadedError: Configuration not loaded
-
-    Returns:
-        dict: Loaded configuration
+    :param str config_name: Configuration name
+    :raises ConfigurationNotLoadedError: Configuration not loaded
+    :return dict: Loaded configuration
     """
-
     if config_name not in config_loader.get_configurations():
         raise ConfigurationNotLoadedError(f'Configuration {config_name} not loaded')
 
@@ -293,10 +266,8 @@ def get_configurations() -> Dict[str, dict]:
     """
     Get all loaded configurations
 
-    Returns:
-        Dict[str, dict]: Loaded configurations
+    :return Dict[str, dict]: Loaded configurations
     """
-
     return config_loader.get_configurations()
 
 
@@ -304,14 +275,10 @@ def get_config_value(key: str, config_name: str = 'default') -> Union[str, int, 
     """
     Get a value from a configuration by key
 
-    Args:
-        key (str): Key to get the value from
-        config_name (str, optional): Configuration name. Defaults to 'default'.
-
-    Returns:
-        Union[str, int, float, bool, None, dict, list]: Value from the configuration
+    :param str key: Key to get the value from
+    :param str config_name: Configuration name
+    :return Union[str, int, float, bool, None, dict, list]: Value from the configuration
     """
-
     return config_loader.get_config(key, config_name)
 
 
@@ -319,25 +286,30 @@ def set_config_value(key: str, value: Union[str, int, float, bool, None, dict, l
     """
     Set a value in a configuration by key and save the changes to the configuration file
 
-    Args:
-        key (str): Key to set the value in
-        value (Union[str, int, float, bool, None, dict, list]): Value to set
-        config_name (str, optional): Configuration name. Defaults to 'default'.
+    :param str key: Key to set the value in
+    :param Union[str, int, float, bool, None, dict, list] value: Value to set
+    :param str config_name: Configuration name
     """
-
     config_loader.set_config(key, value, config_name)
 
 
+def remove_config_value(key: str, config_name: str = 'default') -> None:
+    """
+    Remove a value from a configuration by key and save the changes to the configuration file
+
+    :param str key: Key to remove the value from
+    :param str config_name: Configuration name
+    """
+    config_loader.remove_config(key, config_name)
+    
 async def async_set_config_value(key: str, value: Union[str, int, float, bool, None, dict, list], config_name: str = 'default') -> None:
     """
     Set a value in a configuration by key and save the changes to the configuration file asynchronously
 
-    Args:
-        key (str): Key to set the value in
-        value (Union[str, int, float, bool, None, dict, list]): Value to set
-        config_name (str, optional): Configuration name. Defaults to 'default'.
+    :param str key: Key to set the value in
+    :param Union[str, int, float, bool, None, dict, list] value: Value to set
+    :param str config_name: Configuration name
     """
-
     await config_loader.async_set_config(key, value, config_name)
 
 
@@ -345,10 +317,9 @@ def remove_configuration(config_name: str) -> None:
     """
     Remove a loaded configuration
 
-    Args:
-        config_name (str): Configuration name
+    :param str config_name: Configuration name
+    :raises ConfigurationNotLoadedError: Configuration not loaded
     """
-
     if config_name not in config_loader.get_configurations():
         raise ConfigurationNotLoadedError(f'Configuration {config_name} not loaded')
 
@@ -356,9 +327,6 @@ def remove_configuration(config_name: str) -> None:
 
 
 def remove_all_configurations() -> None:
-    """
-    Remove all loaded configurations
-    """
-
+    """ Remove all loaded configurations """
     config_loader.get_configurations().clear()
     config_loader.config_paths.clear()
