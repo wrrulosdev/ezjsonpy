@@ -218,6 +218,26 @@ class ConfigLoader:
         :return Dict[str, dict]: Loaded configurations
         """
         return self.configurations
+    
+    def config_value_exists(self, key: str, config_name: str) -> bool:
+        """
+        Check if a value exists in a configuration by key
+
+        :param str key: Key to check the value from
+        :param str config_name: Configuration name
+        :raises ConfigurationNotLoadedError: Configuration not loaded
+        :return bool: True if the value exists, False otherwise
+        """
+        if config_name not in self.configurations:
+            raise ConfigurationNotLoadedError(f'Configuration {config_name} not loaded')
+
+        keys: List[str] = key.split('.')
+
+        try:
+            reduce(lambda d, k: d[k], keys, self.configurations[config_name])
+            return True
+        except KeyError:
+            return False
 
     def _check_configuration_list(self, configurations: List[Dict[str, Union[str, os.PathLike]]]) -> None:
         """
@@ -374,3 +394,14 @@ def remove_all_configurations() -> None:
     """ Remove all loaded configurations """
     config_loader.get_configurations().clear()
     config_loader.config_paths.clear()
+
+
+def config_value_exists(key: str, config_name: str = 'default') -> bool:
+    """
+    Check if a value exists in a configuration by key
+
+    :param str key: Key to check the value from
+    :param str config_name: Configuration name
+    :return bool: True if the value exists, False otherwise
+    """
+    return config_loader.config_value_exists(key, config_name)
