@@ -148,7 +148,12 @@ class ConfigLoader:
         for k in key_parts[:-1]:
             config_dict: dict = config_dict.setdefault(k, {})
 
-        del config_dict[key_parts[-1]]
+        try:
+            del config_dict[key_parts[-1]]
+
+        except KeyError:
+            raise KeyError(f'Key {key} not found in configuration {config_name}')
+        
         config_path: str = self.config_paths[config_name]
 
         with open(config_path, 'w', encoding='utf-8') as config_file:
@@ -173,6 +178,34 @@ class ConfigLoader:
             config_dict = config_dict.setdefault(part, {})
 
         config_dict[key_parts[-1]] = value
+        config_path = self.config_paths[config_name]
+
+        async with aiofiles.open(config_path, 'w', encoding='utf-8') as config_file:
+            await config_file.write(json.dumps(self.configurations[config_name], indent=4))
+
+    async def async_remove_config(self, key: str, config_name: str) -> None:
+        """
+        Remove a value from a configuration by key and save the changes to the configuration file asynchronously
+
+        :param str key: Key to remove the value from
+        :param str config_name: Configuration name
+        :raises ConfigurationNotLoadedError: Configuration not loaded
+        """
+        if config_name not in self.configurations:
+            raise ConfigurationNotLoadedError(f'Configuration {config_name} not loaded')
+
+        key_parts: List[str] = key.split('.')
+        config_dict: dict = self.configurations[config_name]
+
+        for part in key_parts[:-1]:
+            config_dict = config_dict.setdefault(part, {})
+
+        try:
+            del config_dict[key_parts[-1]]
+
+        except KeyError:
+            raise KeyError(f'Key {key} not found in configuration {config_name}')
+        
         config_path = self.config_paths[config_name]
 
         async with aiofiles.open(config_path, 'w', encoding='utf-8') as config_file:
@@ -302,6 +335,7 @@ def remove_config_value(key: str, config_name: str = 'default') -> None:
     """
     config_loader.remove_config(key, config_name)
     
+    
 async def async_set_config_value(key: str, value: Union[str, int, float, bool, None, dict, list], config_name: str = 'default') -> None:
     """
     Set a value in a configuration by key and save the changes to the configuration file asynchronously
@@ -311,6 +345,16 @@ async def async_set_config_value(key: str, value: Union[str, int, float, bool, N
     :param str config_name: Configuration name
     """
     await config_loader.async_set_config(key, value, config_name)
+
+
+async def async_remove_config_value(key: str, config_name: str = 'default') -> None:
+    """
+    Remove a value from a configuration by key and save the changes to the configuration file asynchronously
+
+    :param str key: Key to remove the value from
+    :param str config_name: Configuration name
+    """
+    await config_loader.async_remove_config(key, config_name)
 
 
 def remove_configuration(config_name: str) -> None:
